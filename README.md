@@ -28,4 +28,4 @@ A fun **Number Guessing Game** built with HTML, CSS, and JavaScript. The game le
 1. Clone this repository to your local machine:
 
    ```bash
-   git clone https://github.com/your-username/number-guessing-game.git
+   git clone https://github.com/Vivekkk-1/number-guessing-game.git
