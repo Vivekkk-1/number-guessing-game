@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Number Guessing Game 🎮</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
+      transition: all 0.4s ease-in-out;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: #00ffe5;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px #00fff2;
+    }
+
+    input {
+      width: 120px;
+      padding: 12px;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      border: 2px solid #00ffe5;
+      background-color: transparent;
+      color: #fff;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 12px 25px;
+      margin: 10px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      background: #00ffe5;
+      color: #000;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #00ccbb;
+      transform: scale(1.05);
+    }
+
+    #feedback, #hint {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      font-style: italic;
+    }
+
+    .stats {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .toggle {
+      margin-top: 2rem;
+    }
+
+    .toggle label {
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .toggle input {
+      transform: scale(1.2);
+      margin-right: 8px;
+    }
+
+    ::placeholder {
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Guess the Number</h1>
+    <p>I'm thinking of a number between <strong>1 and 100</strong><br>Can you guess?💭.</p>
+    <input type="number" id="guessInput" min="1" max="100" placeholder="Enter guess" />
+    <br />
+    <button onclick="checkGuess()">🚀 Submit</button>
+    <button onclick="resetGame()">🔄 Reset</button>
+    <button onclick="startVoiceInput()">🎤 Speak</button>
+    <p id="feedback"></p>
+    <p id="hint"></p>
+    <div class="stats">
+      🎯 Attempts: <span id="attempts">0</span> <br>
+      🏆 Best Score: <span id="bestScore">--</span>
+    </div>
+    <div class="toggle">
+      <label>
+        <input type="checkbox" id="darkMode" onchange="toggleDarkMode()"> 🌙 Dark Mode
+      </label>
+    </div>
+  </div>
+
+  <!-- Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Sounds -->
+  <audio id="sound-low" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+  <audio id="sound-high" src="high.wav"></audio>
+  <audio id="sound-correct" src="win.wav"></audio>
+
+  <script>
+    let numberToGuess = Math.floor(Math.random() * 100) + 1;
+    let attempts = 0;
+
+    const bestScore = localStorage.getItem("bestScore") || "--";
+    document.getElementById("bestScore").innerText = bestScore;
+
+    function checkGuess() {
+      const guess = Number(document.getElementById("guessInput").value);
+      if (!guess || guess < 1 || guess > 100) {
+        alert("Please enter a number between 1 and 100.");
+        return;
+      }
+
+      attempts++;
+      document.getElementById("attempts").innerText = attempts;
+
+      const diff = Math.abs(guess - numberToGuess);
+      let feedback = '';
+      let hint = '';
+
+      if (guess < numberToGuess) {
+        document.getElementById("sound-low").play();
+        feedback = "📉 Too low!";
+      } else if (guess > numberToGuess) {
+        document.getElementById("sound-high").play();
+        feedback = "📈 Too high!";
+      } else {
+        document.getElementById("sound-correct").play();
+        feedback = `🎉 Correct! The number was ${numberToGuess}`;
+        launchConfetti();
+
+        if (bestScore === "--" || attempts < parseInt(bestScore)) {
+          localStorage.setItem("bestScore", attempts);
+          document.getElementById("bestScore").innerText = attempts;
+        }
+      }
+
+      if (diff !== 0) {
+        if (diff <= 5) hint = "🔥 You're very close!";
+        else if (diff <= 15) hint = "😎 Getting warmer!";
+        else hint = "🥶 Pretty far off...";
+      }
+
+      document.getElementById("feedback").innerText = feedback;
+      document.getElementById("hint").innerText = hint;
+    }
+
+    function resetGame() {
+      numberToGuess = Math.floor(Math.random() * 100) + 1;
+      attempts = 0;
+      document.getElementById("attempts").innerText = 0;
+      document.getElementById("feedback").innerText = "";
+      document.getElementById("hint").innerText = "";
+      document.getElementById("guessInput").value = "";
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    function startVoiceInput() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const spokenNumber = parseInt(event.results[0][0].transcript);
+        document.getElementById("guessInput").value = spokenNumber;
+        checkGuess();
+      };
+
+      recognition.onerror = (event) => {
+        alert("Voice input failed: " + event.error);
+      };
+    }
+
+    function launchConfetti() {
+      confetti({
+        particleCount: 200,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
+    document.getElementById("guessInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") checkGuess();
+    });
+  </script>
+</body>
+</html>
