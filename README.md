@@ -21,6 +21,8 @@ A fun **Number Guessing Game** built with HTML, CSS, and JavaScript. The game le
 
 ![Game Screenshot](game1.png)
 
+## Live
+# https://numbergue.netlify.app/
 
 ## How to Run Locally
 1. Clone this repository to your local machine:
